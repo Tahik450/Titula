@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FK Željezničar — Dolina ćupova</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#070d1a;
+    --navy-2:#0c1730;
+    --steel:#3c4656;
+    --steel-light:#7c8798;
+    --zeljo-blue:#1e4fd8;
+    --zeljo-blue-2:#3a6bff;
+    --amber:#f2a73b;
+    --amber-dim:#8a6221;
+    --paper:#e9e4d6;
+    --white:#f4f2ec;
+    --line:rgba(244,242,236,0.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--navy);
+    color:var(--white);
+    font-family:'IBM Plex Sans',sans-serif;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- top bar: like a station name plate ---------- */
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:22px 6vw;
+    border-bottom:1px solid var(--line);
+    position:relative;
+    z-index:5;
+  }
+  .topbar .crest{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .crest-badge{
+    width:40px;height:40px;
+    border:2px solid var(--amber);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--amber);
+    flex-shrink:0;
+  }
+  .crest .name{
+    font-size:14px;
+    letter-spacing:0.18em;
+    color:var(--steel-light);
+  }
+  .crest .name b{color:var(--white);}
+  .topbar .station-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    color:var(--steel-light);
+    border:1px solid var(--line);
+    padding:6px 12px;
+  }
+
+  /* ---------- hero / departure board ---------- */
+  .hero{
+    min-height:92vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:6vh 6vw 8vh;
+    position:relative;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 2px, rgba(255,255,255,0.015) 2px 4px),
+      radial-gradient(ellipse at 50% 0%, #101d3d 0%, var(--navy) 60%);
+  }
+  .hero .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.25em;
+    color:var(--amber);
+    margin-bottom:22px;
+  }
+  .hero .club{
+    font-size:clamp(34px,6vw,64px);
+    font-weight:700;
+    color:var(--white);
+    line-height:1.02;
+  }
+  .hero .club span{color:var(--zeljo-blue-2);}
+  .hero .sub{
+    margin-top:10px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    letter-spacing:0.1em;
+    color:var(--steel-light);
+  }
+
+  /* the board itself */
+  .board{
+    margin-top:56px;
+    background:#000;
+    border:1px solid #1a2340;
+    border-radius:4px;
+    padding:36px clamp(18px,5vw,56px);
+    box-shadow:0 0 0 1px rgba(255,255,255,0.03), 0 40px 80px -30px rgba(0,0,0,0.8), inset 0 0 40px rgba(30,79,216,0.06);
+    position:relative;
+  }
+  .board::before{
+    content:"";
+    position:absolute;
+    top:10px;left:10px;right:10px;bottom:10px;
+    border:1px solid rgba(242,167,59,0.08);
+    pointer-events:none;
+  }
+  .board-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.22em;
+    color:var(--amber);
+    margin-bottom:18px;
+  }
+  .flap-row{
+    display:flex;
+    gap:clamp(6px,1.4vw,16px);
+    justify-content:center;
+  }
+  .flap{
+    background:linear-gradient(180deg,#12182a,#0a0e1a);
+    border:1px solid #232c45;
+    border-radius:3px;
+    width:clamp(48px,9vw,88px);
+    height:clamp(64px,12vw,116px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:clamp(30px,6.4vw,64px);
+    color:var(--amber);
+    text-shadow:0 0 18px rgba(242,167,59,0.45);
+    position:relative;
+  }
+  .flap::after{
+    content:"";
+    position:absolute;
+    left:0;right:0;top:50%;
+    height:1px;
+    background:rgba(0,0,0,0.55);
+  }
+  .board-caption{
+    margin-top:20px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:clamp(11px,1.6vw,14px);
+    letter-spacing:0.14em;
+    color:var(--steel-light);
+  }
+  .board-caption b{color:var(--white);}
+  .board-sub{
+    margin-top:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--steel);
+  }
+
+  .scroll-cue{
+    margin-top:52px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.2em;
+    color:var(--steel-light);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+  .scroll-cue .rail{
+    width:1px;height:34px;
+    background:linear-gradient(180deg,var(--amber),transparent);
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:0.2}50%{opacity:1}}
+
+  /* ---------- history section ---------- */
+  .history{
+    position:relative;
+    padding:10vh 6vw 16vh;
+    max-width:1040px;
+    margin:0 auto;
+  }
+  .history-head{
+    text-align:center;
+    margin-bottom:10vh;
+  }
+  .history-head .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.25em;
+    color:var(--amber);
+    margin-bottom:14px;
+  }
+  .history-head h2{
+    font-size:clamp(28px,4.4vw,44px);
+    font-weight:600;
+  }
+  .history-head p{
+    margin-top:14px;
+    color:var(--steel-light);
+    font-size:15px;
+    max-width:520px;
+    margin-left:auto;margin-right:auto;
+  }
+
+  .track{
+    position:relative;
+    padding-left:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .track-line{
+    position:absolute;
+    left:50%;
+    top:0;bottom:0;
+    width:2px;
+    transform:translateX(-50%);
+    background:repeating-linear-gradient(180deg, var(--steel) 0 26px, transparent 26px 40px);
+    z-index:0;
+  }
+  .track-line::before,.track-line::after{
+    content:"";
+    position:absolute;
+    left:-9px;right:-9px;
+    height:2px;
+    background:var(--steel);
+  }
+  .track-line::before{top:0;}
+  .track-line::after{bottom:0;}
+
+  .stop{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    width:100%;
+    margin-bottom:64px;
+    opacity:0;
+    transform:translateY(28px);
+    transition:opacity 0.7s ease, transform 0.7s ease;
+    z-index:1;
+  }
+  .stop.visible{opacity:1;transform:translateY(0);}
+  .stop-inner{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    width:100%;
+    max-width:460px;
+    gap:14px;
+  }
+  .visual{order:1;}
+  .node{order:1;}
+  .card{order:2;}
+
+  .node{
+    width:64px;height:64px;
+    border-radius:50%;
+    background:var(--navy-2);
+    border:2px solid var(--amber);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:11px;
+    color:var(--amber);
+    box-shadow:0 0 0 6px var(--navy), 0 0 24px rgba(242,167,59,0.25);
+    text-align:center;
+    line-height:1.1;
+  }
+  .node.major{
+    background:var(--zeljo-blue);
+    border-color:var(--zeljo-blue-2);
+    color:var(--white);
+    box-shadow:0 0 0 6px var(--navy), 0 0 30px rgba(58,107,255,0.5);
+  }
+
+  .card{
+    max-width:420px;
+    width:100%;
+    padding:22px 26px;
+    background:var(--navy-2);
+    border:1px solid var(--line);
+    border-top:2px solid var(--amber-dim);
+    border-radius:6px;
+    position:relative;
+    text-align:center;
+  }
+  .card .year{
+    font-family:'Oswald',sans-serif;
+    font-size:26px;
+    font-weight:700;
+    color:var(--amber);
+    letter-spacing:0.03em;
+  }
+  .card .title{
+    font-family:'Oswald',sans-serif;
+    font-size:16px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    margin-top:4px;
+    color:var(--white);
+  }
+  .card p{
+    margin-top:10px;
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--steel-light);
+  }
+  .card .tag{
+    display:inline-block;
+    margin-top:12px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.14em;
+    color:var(--amber);
+    border:1px solid var(--amber-dim);
+    padding:3px 9px;
+    border-radius:20px;
+  }
+
+  .visual{
+    width:64px;height:64px;
+    display:none;
+  }
+  @media(min-width:720px){
+    .visual{display:flex;align-items:center;justify-content:center;}
+  }
+  .visual svg{width:38px;height:38px;stroke:var(--steel-light);}
+
+  .visual.photo{
+    width:min(280px,72vw);
+    height:auto;
+    display:flex !important;
+  }
+  .visual.photo .frame{
+    width:100%;
+    padding:8px;
+    background:var(--navy-2);
+    border:1px solid var(--line);
+    box-shadow:0 20px 40px -18px rgba(0,0,0,0.7);
+    position:relative;
+  }
+  .visual.photo .frame::before{
+    content:"";
+    position:absolute;
+    inset:8px;
+    border:1px solid rgba(242,167,59,0.35);
+    pointer-events:none;
+  }
+  .visual.photo img{
+    display:block;
+    width:100%;
+    height:auto;
+    filter:grayscale(55%) sepia(18%) contrast(1.05) brightness(0.96);
+  }
+  .visual.photo .frame-cap{
+    margin-top:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9px;
+    letter-spacing:0.14em;
+    color:var(--amber);
+    text-align:center;
+  }
+  .visual.photo .frame.gallery{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+  }
+  .visual.photo .frame.gallery img{height:100%;object-fit:cover;}
+
+  .visual.photo .frame{position:relative;}
+  .visual.photo .slot-label{
+    position:absolute;
+    inset:8px;
+    border:1px dashed var(--steel);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.08em;
+    line-height:1.6;
+    color:var(--steel-light);
+    padding:10px;
+    min-height:120px;
+  }
+  .visual.photo img{position:relative;z-index:1;}
+  .visual.photo .frame img[src]:not([src=""]){display:block;}
+  .visual.photo .frame.img-error img{display:none;}
+  .visual.photo .frame:not(.img-error) .slot-label{display:none;}
+
+  /* mobile: tighten spacing */
+  @media(max-width:719px){
+    .card{max-width:100%;padding:20px;}
+    .visual{display:none;}
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    padding:8vh 6vw 6vh;
+    text-align:center;
+    border-top:1px solid var(--line);
+  }
+  footer .crest-badge{margin:0 auto 16px;}
+  footer p{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    color:var(--steel);
+  }
+  footer .stat-row{
+    display:flex;
+    justify-content:center;
+    gap:clamp(20px,5vw,60px);
+    margin:34px 0;
+    flex-wrap:wrap;
+  }
+  footer .stat b{
+    display:block;
+    font-family:'Oswald',sans-serif;
+    font-size:30px;
+    color:var(--white);
+  }
+  footer .stat span{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.14em;
+    color:var(--steel-light);
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="crest">
+    
+    <div class="name">FK <b>ŽELJEZNIČAR</b> · SARAJEVO</div>
+  </div>
+  
+</div>
+
+<section class="hero">
+  <div class="eyebrow">DOLINA ĆUPOVA — OD 1921.</div>
+  <h1 class="club">PLAVI ČEKAJU<br><span>NA DOLAZAK TITULE.</span></h1>
+  <div class="sub">BROJAČ OTKAD JE ZADNJI PUT PODIGNUT PEHAR PRVAKA BiH</div>
+
+  <div class="board">
+    <div class="board-label">DANA OD TITULE</div>
+    <div class="flap-row" id="flapRow"></div>
+    <div class="board-caption">Zadnja titula: <b>26. maj 2013.</b> — Premijer liga BiH 2012/13.</div>
+    <div class="board-sub" id="breakdown">računa se…</div>
+  </div>
+
+  <div class="scroll-cue">
+    <span>KRENI KROZ HISTORIJU</span>
+    <div class="rail"></div>
+  </div>
+</section>
+
+<section class="history">
+  <div class="history-head">
+    <div class="eyebrow">PRUGA KROZ HISTORIJU</div>
+    <h2>Stanice uspjeha</h2>
+    <p>Skroluj kroz 100+ godina Željezničara — od osnivanja 1921, preko najveće titule 1972. i evropskog polufinala, do zadnjeg trofeja 2017/18.</p>
+  </div>
+
+  <div class="track">
+    <div class="track-line"></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <img src="assets/1921-osnivanje.jpg" alt="Osnivačka ekipa Željezničara">
+          <div class="frame-cap">FKŽ · OKO 1921–25.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1921</div>
+        <div class="title">Osnivanje kluba</div>
+        <p>Grupa mladih radnika željezničke radionice osniva klub u jesen 1920. Nakon dvije uslovne utakmice, 19. septembra 1921. klub je zvanično primljen u Sarajevski podsavez.</p>
+        <span class="tag">OSNIVANJE</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1925-26.jpg</div>
+          <img src="assets/1925-26.jpg" alt="1925/26" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1925/26</div>
+        <div class="title">Prvi ligaški uspjeh</div>
+        <p>Poslije nekoliko teških početničkih sezona, Željo osvaja prvo mjesto u Drugom razredu Sarajevskog podsaveza i prvi put se plasira u viši rang.</p>
+        <span class="tag">PRVI USPJEH</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1932.jpg</div>
+          <img src="assets/1932.jpg" alt="1932" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1932</div>
+        <div class="title">Prvo vlastito igralište</div>
+        <p>Dobrovoljnim radom igrača i željezničkih radnika izgrađeno je igralište na Pofalićima. Konkurencija ubrzo iskorištava spor oko zemljišta da ga klubu oduzme.</p>
+        <span class="tag">INFRASTRUKTURA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1941-1945.jpg</div>
+          <img src="assets/1941-1945.jpg" alt="1941–1945" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1941–1945</div>
+        <div class="title">Rat prekida rad kluba</div>
+        <p>Drugi svjetski rat zaustavlja svaku fudbalsku aktivnost. Mnogi članovi kluba pridružuju se pokretu otpora.</p>
+        <span class="tag">RAT</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1945-46.jpg</div>
+          <img src="assets/1945.jfif" alt="1945/46" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1945/46</div>
+        <div class="title">Obnova i plasman u Jugoslaviju</div>
+        <p>Odmah po oslobođenju Sarajeva klub obnavlja rad. Osvajanjem Prvenstva grada Sarajeva i razigravanja s Borcem i Veležom, Željo prvi put ulazi u prvu jugoslavensku ligu — najveći uspjeh kluba do tada.</p>
+        <span class="tag">OBNOVA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1949-1953.jpg</div>
+          <img src="assets/1949-1953.jpg" alt="1949–1953" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1949–1953</div>
+        <div class="title">Izgradnja stadiona Grbavica</div>
+        <p>Radnici željeznice, vojnici i građani Sarajeva grade novi stadion na Grbavici, otvoren 1953. — od tada dom kluba.</p>
+        <span class="tag">GRBAVICA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1961-62.jpg</div>
+          <img src="assets/1961.jfif" alt="1961/62" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1961/62</div>
+        <div class="title">Rađanje velike generacije</div>
+        <p>Povratak u Prvu saveznu ligu donosi i rađanje generacije koja će obilježiti jugoslavenski fudbal — Osim, Smajlović, Katalinski, Hadžiabdić i drugi.</p>
+        <span class="tag">NOVA GENERACIJA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1971-72.jpg</div>
+          <img src="assets/1971-72.jfif" alt="1971/72" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1971/72</div>
+        <div class="title">Prvak Jugoslavije</div>
+        <p>Pod vodstvom Milana Ribara i uz "totalni fudbal", Željo u zadnjem kolu slavi 4:0 protiv Partizana u Beogradu i osvaja titulu prvaka Jugoslavije — najveći uspjeh u historiji kluba.</p>
+        <span class="tag">VRHUNAC</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1980-81.jpg</div>
+          <img src="assets/1980-81.jpg" alt="1980/81" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1980/81</div>
+        <div class="title">Finale Kupa Jugoslavije</div>
+        <p>Željo prvi put stiže do finala jugoslavenskog kupa. 24. maja 1981. u Beogradu poražen je 2:3 od Veleža — drugi najveći uspjeh kluba.</p>
+        <span class="tag">FINALE</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1984-85.jpg</div>
+          <img src="assets/1984-85.jpg" alt="1984/85" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1984/85</div>
+        <div class="title">Polufinale UEFA kupa</div>
+        <p>Pod vodstvom Ivice Osima, Željo izbacuje Sliven, Sion, Craiovu i Dinamo Minsk i stiže do polufinala UEFA kupa, gdje ga zaustavlja Videoton — i danas najbolji evropski rezultat bilo kojeg bh. kluba.</p>
+        <span class="tag">EVROPA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1991-92.jpg</div>
+          <img src="assets/1991-1992.jfif" alt="1991/92" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1991/92</div>
+        <div class="title">Rat prekida sezonu</div>
+        <p>5. aprila 1992. trebala se igrati utakmica Željezničar – Rad na Grbavici. Nikad nije odigrana — u Sarajevu počinje rat.</p>
+        <span class="tag">RAT</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1992-1995.jpg</div>
+          <img src="assets/1992-1995.jpg" alt="1992–1995" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1992–1995</div>
+        <div class="title">Opstanak u opsadi</div>
+        <p>Stadion Grbavica je gotovo u potpunosti izgorio, klub na ivici gašenja. Igrači, sada pripadnici Armije BiH, održavaju klub na životu igrajući mali fudbal između odlazaka na front.</p>
+        <span class="tag">OPSTANAK</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1996.jpg</div>
+          <img src="assets/1996.webp" alt="1996" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1996</div>
+        <div class="title">Povratak na Grbavicu</div>
+        <p>2. maja 1996. na obnovljenoj, ratom uništenoj Grbavici odigran je prvi meč poslije rata — gradski derbi sa Sarajevom, rezultat 1:1.</p>
+        <span class="tag">POVRATAK</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1997-98.jpg</div>
+          <img src="assets/1997-98.jpg" alt="1997/98" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1997/98</div>
+        <div class="title">Prva titula prvaka BiH</div>
+        <p>Gol Hadisa Zubanovića na koševu u finalnoj utakmici protiv Sarajeva, 5. juna, donosi Želji prvu titulu prvaka samostalne Bosne i Hercegovine.</p>
+        <span class="tag">ZUBAN DAN</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1998.jpg</div>
+          <img src="assets/1998.jpg" alt="1998" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1998</div>
+        <div class="title">Prvi Superkup BiH</div>
+        <p>Na zasnježenoj Grbavici Željo slavi 4:0 protiv Sarajeva i osvaja prvi Superkup Bosne i Hercegovine.</p>
+        <span class="tag">SUPERKUP</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/1999-2000.jpg</div>
+          <img src="assets/1999.jfif" alt="1999/2000" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">1999/2000</div>
+        <div class="title">Prvi Kup BiH</div>
+        <p>Igrajući obje završnice — lige i kupa, Željo osvaja svoj prvi Kup Bosne i Hercegovine, dok titula izmiče za dlaku.</p>
+        <span class="tag">KUP #1</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/2000-01.jpg</div>
+          <img src="assets/20001.jpg" alt="2000/01" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">2000/01</div>
+        <div class="title">Prva dupla kruna</div>
+        <p>Pod Amarom Osimom Željo osvaja titulu, Kup BiH (3:2 protiv Sarajeva u finalu) i Superkup — prva dupla kruna u klupskoj historiji.</p>
+        <span class="tag">DUPLA KRUNA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/2001-02.jpg</div>
+          <img src="assets/2002.jpg" alt="2001/02" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">2001/02</div>
+        <div class="title">Odbranjena titula</div>
+        <p>Željo brani naslov prvaka sa čak 11 bodova prednosti nad drugoplasiranim Širokim Brijegom te prvi put od 1972. igra kvalifikacije za Ligu prvaka.</p>
+        <span class="tag">TITULA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/2002-03.jpg</div>
+          <img src="assets/newcastle.jpg" alt="2002/03" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">2002/03</div>
+        <div class="title">Duel s Newcastleom</div>
+        <p>U trećem pretkolu Lige prvaka Željo ispada od Newcastle Uniteda (0:1, 4:0) — najbolji poslijeratni evropski rezultat kluba. Iste sezone osvojen i treći Kup BiH.</p>
+        <span class="tag">EVROPA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/2003-2009.jpg</div>
+          <img src="assets/2005.jfif" alt="2003–2009" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">2003–2009</div>
+        <div class="title">Godine krize</div>
+        <p>Šest sezona bez titule, uz česte smjene trenera, finansijske probleme i plasmane u donjem dijelu tabele. Najveći domet perioda: polufinale Kupa BiH.</p>
+        <span class="tag">KRIZA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/2009-10.jpg</div>
+          <img src="assets/2010.jpg" alt="2009/10" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">2009/10</div>
+        <div class="title">Titula se vraća na Grbavicu</div>
+        <p>Povratkom Amara Osima na klupu Želje, poslije sedam godina suše Željo ponovo osvaja titulu prvaka BiH.</p>
+        <span class="tag">PREPOROD</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/2010-11.jpg</div>
+          <img src="assets/2011_kup.jpg" alt="2010/11" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">2010/11</div>
+        <div class="title">Kup BiH</div>
+        <p>Željo ubjedljivo osvaja Kup BiH — 4:0 u dvomeču protiv Čelika, uz upečatljivih 0:3 u gostima u Zenici.</p>
+        <span class="tag">KUP</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/2011-12.jpg</div>
+          <img src="assets/2011.jpg" alt="2011/12" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">2011/12</div>
+        <div class="title">Rekordna dupla kruna</div>
+        <p>35 utakmica bez poraza i niz od 12 uzastopnih pobjeda. Željo osvaja i ligu i Kup BiH, u finalu protiv Širokog Brijega.</p>
+        <span class="tag">DUPLA KRUNA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/2012-13.jpg</div>
+          <img src="assets/2013.jpg" alt="2012/13" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">2012/13</div>
+        <div class="title">Zadnja titula prvaka BiH</div>
+        <p>Posljednja titula prvaka Bosne i Hercegovine do danas — sezona okončana 26. maja 2013.</p>
+        <span class="tag">ZADNJA TITULA</span>
+      </div>
+    </div></div>
+
+    <div class="stop"><div class="stop-inner">
+      <div class="visual photo">
+        <div class="frame">
+          <div class="slot-label">DODAJ SLIKU<br>assets/2017-18.jpg</div>
+          <img src="assets/2018.jpg" alt="2017/18" onerror="this.closest('.frame').classList.add('img-error')">
+        </div>
+      </div>
+      <div class="card">
+        <div class="year">2017/18</div>
+        <div class="title">Osvajač Kupa BiH</div>
+        <p>Zadnji osvojeni trofej kluba do danas — peti Kup Bosne i Hercegovine u klupskoj vitrini.</p>
+        <span class="tag">ZADNJI TROFEJ</span>
+      </div>
+    </div></div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="crest-badge">FKŽ</div>
+  <div class="stat-row">
+    <div class="stat"><b>6</b><span>LIGA. TITULE BiH</span></div>
+    <div class="stat"><b>6</b><span>KUPOVA BiH</span></div>
+    <div class="stat"><b>3</b><span>SUPERKUPA</span></div>
+    <div class="stat"><b>1</b><span>TITULA JUGOSLAVIJE</span></div>
+  </div>
+  <p>FK ŽELJEZNIČAR · OSNOVAN 1921. · GRBAVICA, SARAJEVO</p>
+</footer>
+
+<script>
+  // Zadnja titula: 18. maj 2013.
+  const titleDate = new Date(2013, 4, 26, 0, 0, 0);
+
+  function renderFlaps(days){
+    const str = String(days);
+    const row = document.getElementById('flapRow');
+    row.innerHTML = '';
+    for(const ch of str){
+      const f = document.createElement('div');
+      f.className = 'flap';
+      f.textContent = ch;
+      row.appendChild(f);
+    }
+  }
+
+  function update(){
+    const now = new Date();
+    const diffMs = now - titleDate;
+    const totalDays = Math.floor(diffMs / 86400000);
+    renderFlaps(totalDays);
+
+    const years = Math.floor(totalDays / 365.25);
+    const rem = Math.floor(totalDays - years*365.25);
+    const months = Math.floor(rem / 30.44);
+    const daysRem = Math.max(0, Math.floor(rem - months*30.44));
+    document.getElementById('breakdown').textContent =
+      `≈ ${years} god. ${months} mj. ${daysRem} dana bez pehara`;
+  }
+  update();
+  setInterval(update, 60000);
+
+  // scroll reveal
+  const stops = document.querySelectorAll('.stop');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('visible'); }
+    });
+  }, {threshold:0.2});
+  stops.forEach(s=>io.observe(s));
+</script>
+
+</body>
+</html>
